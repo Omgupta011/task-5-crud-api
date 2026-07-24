@@ -5,13 +5,15 @@ app.use(express.json());
 
 let students = [];
 
+let nextId = 1;
+
 app.post("/students", (req, res) => {
 
     const student = {
-        name: req.body.name,
-        age: req.body.age
-    };
-
+    id: nextId++,
+    name: req.body.name,
+    age: req.body.age
+};
     students.push(student);
 
     res.send("Student Added Successfully");
@@ -28,12 +30,16 @@ app.get("/students", (req, res) => {
 
 app.put("/students/:id", (req, res) => {
 
-    const id = req.params.id;
+    const id = Number(req.params.id);
 
-    students[id] = {
-        name: req.body.name,
-        age: req.body.age
-    };
+    const student = students.find(s => s.id === id);
+
+    if (!student) {
+        return res.status(404).send("Student not found");
+    }
+
+    student.name = req.body.name;
+    student.age = req.body.age;
 
     res.send("Student Updated Successfully");
 
@@ -41,14 +47,22 @@ app.put("/students/:id", (req, res) => {
 
 app.delete("/students/:id", (req, res) => {
 
-    const id = req.params.id;
+    const id = Number(req.params.id);
 
-    students.splice(id, 1);
+    const index = students.findIndex(s => s.id === id);
+
+    if (index === -1) {
+        return res.status(404).send("Student not found");
+    }
+
+    students.splice(index, 1);
 
     res.send("Student Deleted Successfully");
 
 });
 
-app.listen(3000, () => {
-    console.log("Server Running");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server Running on Port ${PORT}`);
 });
